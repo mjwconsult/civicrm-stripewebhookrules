@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<extension key="stripewebhookrules" type="module">
+  <file>stripewebhookrules</file>
+  <name>Stripe Webhook Rules</name>
+  <description>This adds extra "rules" for processing Stripe webhooks using the webhookEventNotMatched hook.</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Matthew Wire</author>
+    <email>mjw@mjwconsult.co.uk</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">https://github.com/mjwconsult/civicrm-stripewebhookrules</url>
+    <url desc="Support">https://mjw.pt/support/stripewebhookrules</url>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2022-01-12</releaseDate>
+  <version>0.1</version>
+  <develStage>alpha</develStage>
+  <compatibility>
+    <ver>5.44</ver>
+  </compatibility>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
+  <civix>
+    <namespace>CRM/Stripewebhookrules</namespace>
+  </civix>
+</extension>
