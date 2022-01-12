@@ -136,7 +136,7 @@ function stripewebhookrules_civicrm_webhook_eventNotMatched(string $type, Object
       // trxn_id should always be set but there seem to be cases when it is not.
 
       // We are only going to try to find a contribution for the "invoice.payment_succeeded" webhook.
-      if ($object->getEventType() !== 'invoice.payment_succeeded') {
+      if (!in_array($object->getEventType(), ['invoice.finalized', 'invoice.payment_succeeded'])) {
         return;
       }
 
@@ -151,8 +151,8 @@ function stripewebhookrules_civicrm_webhook_eventNotMatched(string $type, Object
         return;
       }
       // API needs them in YmdHis format. They come in as timestamp.
-      $periodStart = date('YmdHis', $object->getData()->object->period_start);
-      $periodEnd = date('YmdHis', $object->getData()->object->period_end);
+      $periodStart = date('Ymd', $object->getData()->object->period_start) . '000000';
+      $periodEnd = date('Ymd', $object->getData()->object->period_end) . '235959';
 
       // Look for a contribution:
       //   - That is linked to the recurring contribution
