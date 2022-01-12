@@ -180,10 +180,12 @@ function stripewebhookrules_civicrm_webhook_eventNotMatched(string $type, Object
           $contribution = \Civi\Api4\Contribution::update(FALSE)
             ->addWhere('id', '=', $contributionID)
             ->addValue('trxn_id', $trxnID);
+          \Civi::log()->info("stripewebhookrules: Adding missing trxnID {$trxnID} to contribution {$contributionID}");
 
           // @fixme: On 5.35.2 Pending don't seem to update to Failed - force it here.
           if ($object->getEventType() === 'invoice.payment_failed') {
             $contribution->addValue('contribution_status_id:name', 'Failed');
+            \Civi::log()->info("stripewebhookrules: Updating contribution {$contributionID} to Failed");
           }
           $contribution->execute()->first();
         }
