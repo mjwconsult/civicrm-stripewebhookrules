@@ -167,17 +167,18 @@ function stripewebhookrules_civicrm_webhook_eventNotMatched(string $type, Object
         ->addWhere('is_template', '=', FALSE)
         ->addWhere('contribution_status_id:name', '=', 'Pending')
         ->addWhere('receive_date', 'BETWEEN', [$periodStart, $periodEnd])
-        ->addWhere('trxn_id', 'IS_NULL')
+        ->addWhere('trxn_id', 'IS NULL')
         ->addOrderBy('receive_date', 'DESC')
         ->execute()
         ->first();
       if (!empty($contribution)) {
         // We found a contribution so assign it back to the result so it can be used by the calling code.
+        $contributionID = $contribution['id'];
         $trxnID = $object->getStripeChargeID() ?? $object->getStripeInvoiceID() ?? NULL;
         if (!empty($trxnID)) {
           // Update the found contribution with the invoice/charge ID.
           $contribution = \Civi\Api4\Contribution::update(FALSE)
-            ->addWhere('id', '=', $contribution['id'])
+            ->addWhere('id', '=', $contributionID)
             ->addValue('trxn_id', $trxnID);
 
           // @fixme: On 5.35.2 Pending don't seem to update to Failed - force it here.
