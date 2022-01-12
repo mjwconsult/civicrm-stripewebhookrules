@@ -136,7 +136,7 @@ function stripewebhookrules_civicrm_webhook_eventNotMatched(string $type, Object
       // trxn_id should always be set but there seem to be cases when it is not.
 
       // We are only going to try to find a contribution for the "invoice.payment_succeeded" webhook.
-      if (!in_array($object->getEventType(), ['invoice.finalized', 'invoice.payment_succeeded'])) {
+      if (!in_array($object->getEventType(), ['invoice.finalized', 'invoice.payment_succeeded', 'invoice.payment_failed'])) {
         return;
       }
 
@@ -159,6 +159,7 @@ function stripewebhookrules_civicrm_webhook_eventNotMatched(string $type, Object
       //   - That is "Pending"
       //   - That is NOT a template
       //   - That has a receive_date within the invoice date range
+      //   - trxn_id has not been set
       //   - That has the most recent `receive_date`. If we already completed the next contribution we won't match..
       //       ..possibly we don't need this but it adds extra "safety" to the matching by reducing the scope for error.
       $contribution = \Civi\Api4\Contribution::get(FALSE)
@@ -166,12 +167,27 @@ function stripewebhookrules_civicrm_webhook_eventNotMatched(string $type, Object
         ->addWhere('is_template', '=', FALSE)
         ->addWhere('contribution_status_id:name', '=', 'Pending')
         ->addWhere('receive_date', 'BETWEEN', [$periodStart, $periodEnd])
+        ->addWhere('trxn_id', 'IS_NULL')
         ->addOrderBy('receive_date', 'DESC')
         ->execute()
         ->first();
       if (!empty($contribution)) {
         // We found a contribution so assign it back to the result so it can be used by the calling code.
+        $trxnID = $object->getStripeChargeID() ?? $object->getStripeInvoiceID() ?? NULL;
+        if (!empty($trxnID)) {
+          // Update the found contribution with the invoice/charge ID.
+          $contribution = \Civi\Api4\Contribution::update(FALSE)
+            ->addWhere('id', '=', $contribution['id'])
+            ->addValue('trxn_id', $trxnID);
+
+          // @fixme: On 5.35.2 Pending don't seem to update to Failed - force it here.
+          if ($object->getEventType() === 'invoice.payment_failed') {
+            $contribution->addValue('contribution_status_id:name', 'Failed');
+          }
+          $contribution->execute()->first();
+        }
         $result['contribution'] = $contribution;
+
       }
       break;
   }

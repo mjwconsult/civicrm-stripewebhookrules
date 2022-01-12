@@ -30,6 +30,7 @@ try to match a contribution:
       //   - That is "Pending"
       //   - That is NOT a template
       //   - That has a receive_date within the invoice date range
+      //   - trxn_id has not been set
       //   - That has the most recent `receive_date`. If we already completed the next contribution we won't match..
       //       ..possibly we don't need this but it adds extra "safety" to the matching by reducing the scope for error.
 ```
